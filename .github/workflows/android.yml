@@ -58,14 +58,30 @@ jobs:
           mkdir -p ~/.android
           cp ci/debug.keystore ~/.android/debug.keystore
 
+      # 有設定 KEYSTORE_BASE64 等 4 個密鑰 → 正式簽章（IzzyOnDroid／F-Droid 要求）
+      # 沒有設定 → 沿用固定的除錯簽章
       - name: 建置 APK
-        working-directory: android
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon --stacktrace
-
-      - name: 整理檔名
-        run: cp android/app/build/outputs/apk/debug/app-debug.apk nlp-helper.apk
+          chmod +x android/gradlew
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "使用正式簽章"
+            echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/upload.jks"
+            (cd android && ./gradlew assembleRelease --no-daemon --stacktrace)
+            BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+            "$BT/zipalign" -p -f 4 android/app/build/outputs/apk/release/app-release-unsigned.apk aligned.apk
+            "$BT/apksigner" sign --ks "$RUNNER_TEMP/upload.jks" --ks-pass env:KEYSTORE_PASSWORD \
+              --ks-key-alias "$KEY_ALIAS" --key-pass env:KEY_PASSWORD --out nlp-helper.apk aligned.apk
+            "$BT/apksigner" verify nlp-helper.apk
+          else
+            echo "使用除錯簽章"
+            (cd android && ./gradlew assembleDebug --no-daemon --stacktrace)
+            cp android/app/build/outputs/apk/debug/app-debug.apk nlp-helper.apk
+          fi
 
       - name: 發布到 Releases
         uses: softprops/action-gh-release@v2

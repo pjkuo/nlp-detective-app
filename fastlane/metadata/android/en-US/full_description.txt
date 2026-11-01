@@ -1,0 +1,7 @@
+NLP Practice Helper is the companion app for the course "Chinese NLP with Colab and Gemini" (National Pingtung University of Science and Technology). Students describe what they need in plain language, let Gemini write the code in Google Colab, and stay responsible for planning, running and verifying the results.
+
+<b>Eight labs</b>: character counting, word segmentation and frequency, test cases written by humans, charts, sentiment analysis, a reusable analysis function, batch summaries with hallucination checks, and document Q&amp;A with citations.
+
+Each lab has a plain-language goal, step diagrams, a one-tap CRISP prompt card, a short quiz and related videos. A supervision log records each prompt, what the AI did and whether the student accepted, revised or rejected it.
+
+<b>Privacy</b>: photos, notes, logs and progress stay on the device. No ads, no tracking. The interface is in Traditional Chinese. Google Colab, Gemini and YouTube are external services.

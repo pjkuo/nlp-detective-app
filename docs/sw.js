@@ -1,6 +1,6 @@
 // 離線快取：App 本體與圖解先存起來，沒網路也能看
-const CACHE = "nlp-helper-v1";
-const ASSETS = ["./", "index.html", "privacy.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png",
+const CACHE = "nlp-helper-v2";
+const ASSETS = ["./", "index.html", "privacy.html", "obtainium.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png",
   "img/loop.jpg", "img/ui.jpg", "img/two_ways.jpg", "img/mm2crisp.jpg", "img/upload.jpg", "img/crisp.jpg",
   "img/pipeline.jpg", "img/sentiment.jpg", "img/batch.jpg", "img/rag.jpg", "img/key.jpg", "img/top15.jpg"];
 self.addEventListener("install", (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS))); self.skipWaiting(); });
