@@ -1,0 +1,6 @@
+{
+  "appId": "io.github.pjkuo.nlphelper",
+  "appName": "NLP 實作小幫手",
+  "webDir": "docs",
+  "android": { "backgroundColor": "#0B2545" }
+}

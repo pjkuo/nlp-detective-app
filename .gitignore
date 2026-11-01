@@ -1,0 +1,5 @@
+node_modules/
+shots/
+icons_check.png
+*.jks
+upload.b64

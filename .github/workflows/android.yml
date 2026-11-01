@@ -1,0 +1,75 @@
+# 每次更新 docs/（網頁 App）或 Android 設定，就在雲端自動產生 APK，放到 Releases 給學生下載
+name: 建置 Android APK
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - "android/**"
+      - "resources/**"
+      - "ci/**"
+      - "capacitor.config.json"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/android.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-apk
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: android-actions/setup-android@v3
+
+      - name: 安裝套件，把網頁 App 同步進 Android 專案
+        run: |
+          npm ci --no-audit --no-fund
+          npx cap sync android
+
+      - name: 設定版本號（每次建置自動加一）
+        run: |
+          sed -i "s/versionCode [0-9]*/versionCode ${{ github.run_number }}/" android/app/build.gradle
+          sed -i "s/versionName \"[^\"]*\"/versionName \"1.0.${{ github.run_number }}\"/" android/app/build.gradle
+
+      - name: 使用固定的除錯簽章（新版可以直接覆蓋舊版安裝）
+        run: |
+          mkdir -p ~/.android
+          cp ci/debug.keystore ~/.android/debug.keystore
+
+      - name: 建置 APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: 整理檔名
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk nlp-helper.apk
+
+      - name: 發布到 Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: NLP 實作小幫手 v1.0.${{ github.run_number }}
+          body: |
+            學生下載：點下方 nlp-helper.apk，或掃描 README 的 QR code。
+            第一次安裝時，手機會詢問是否允許「安裝不明來源的應用程式」，請選允許。
+          files: nlp-helper.apk
+          make_latest: true

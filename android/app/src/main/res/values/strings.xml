@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">NLP 實作小幫手</string>
+    <string name="title_activity_main">NLP 實作小幫手</string>
+    <string name="package_name">io.github.pjkuo.nlphelper</string>
+    <string name="custom_url_scheme">io.github.pjkuo.nlphelper</string>
+</resources>

@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NLP 實作小幫手</title>
+<meta name="description" content="用中文指揮 AI 寫程式：Colab × Gemini 中文 NLP 八關實作、CRISP 提示卡、影片與監督日誌">
+<meta name="theme-color" content="#0B2545">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>
+:root {
+  --navy: #0B2545; --cyan: #0E7490; --cyan-l: #E0F2F7; --amber: #B45309; --amber-b: #D97706; --amber-l: #FEF3C7;
+  --ink: #1E293B; --muted: #5B6B80; --line: #D5DEE8; --bg: #F5F8FB; --card: #FFFFFF; --ok: #15803D; --bad: #B91C1C;
+  --radius: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --ink: #E6EDF5; --muted: #A3B3C5; --line: #2C3E55; --bg: #0A1626; --card: #12233A; --cyan-l: #10364A; --amber-l: #3B2A0B; }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif; background: var(--bg); color: var(--ink);
+  font-size: 16px; line-height: 1.6; -webkit-tap-highlight-color: transparent; padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
+header.top { position: sticky; top: 0; z-index: 5; background: var(--navy); color: #fff; padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
+  display: flex; align-items: center; gap: 10px; }
+header.top h1 { font-size: 18px; margin: 0; font-weight: 700; flex: 1; }
+header.top button { background: none; border: 0; color: #fff; font-size: 15px; padding: 6px 4px; }
+main { max-width: 560px; margin: 0 auto; padding: 16px; }
+h2 { font-size: 21px; margin: 6px 0 12px; color: var(--navy); }
+@media (prefers-color-scheme: dark) { h2 { color: #9FD8E8; } }
+h3 { font-size: 17px; margin: 18px 0 8px; }
+p { margin: 0 0 10px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 12px; }
+.hero { background: var(--navy); color: #fff; border: 0; }
+.hero h2 { color: #fff; margin-top: 0; }
+.muted { color: var(--muted); font-size: 14px; }
+.btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 48px; border-radius: 12px; border: 0;
+  font-size: 16px; font-weight: 700; font-family: inherit; cursor: pointer; text-decoration: none; padding: 10px 14px; }
+.btn.primary { background: var(--amber-b); color: #fff; }
+.btn.cyan { background: var(--cyan); color: #fff; }
+.btn.ghost { background: transparent; color: var(--cyan); border: 2px solid var(--cyan); }
+.btn + .btn { margin-top: 10px; }
+.row { display: flex; gap: 10px; }
+.row > * { flex: 1; margin-top: 0 !important; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.tile { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; text-decoration: none; color: inherit; display: block; }
+.tile .ic { font-size: 26px; }
+.tile b { display: block; margin-top: 4px; }
+img.fig { width: 100%; border-radius: 10px; border: 1px solid var(--line); background: #fff; display: block; cursor: zoom-in; }
+.cap { font-size: 13px; color: var(--muted); text-align: center; margin: 4px 0 10px; }
+.unit-item { display: flex; align-items: center; gap: 12px; }
+.badge { flex: none; width: 40px; height: 40px; border-radius: 50%; background: var(--cyan); color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.badge.done { background: var(--ok); }
+.unit-item .t { flex: 1; }
+.unit-item .t b { display: block; font-size: 16px; }
+ol.steps { counter-reset: s; list-style: none; padding: 0; margin: 0; }
+ol.steps li { counter-increment: s; position: relative; padding: 8px 0 8px 42px; border-bottom: 1px dashed var(--line); }
+ol.steps li:last-child { border-bottom: 0; }
+ol.steps li::before { content: counter(s); position: absolute; left: 0; top: 8px; width: 30px; height: 30px; border-radius: 50%;
+  background: var(--amber-b); color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+.crisp { background: var(--amber-l); border: 1px solid #F3D9A4; border-radius: var(--radius); padding: 12px 14px; }
+.crisp .ln { display: flex; gap: 8px; padding: 4px 0; }
+.crisp .k { flex: none; width: 26px; height: 26px; border-radius: 6px; background: var(--cyan); color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.crisp .k.p { background: var(--amber-b); }
+.quiz button.opt { display: block; width: 100%; text-align: left; background: var(--card); border: 2px solid var(--line); border-radius: 12px;
+  padding: 10px 12px; margin: 8px 0; font: inherit; color: inherit; cursor: pointer; }
+.quiz button.opt.right { border-color: var(--ok); background: #E8F6EC; color: #14532D; }
+.quiz button.opt.wrong { border-color: var(--bad); background: #FDECEC; color: #7F1D1D; }
+.fb { font-weight: 700; margin-top: 4px; }
+label { display: block; font-size: 14px; font-weight: 700; margin: 10px 0 4px; }
+input[type=text], textarea, select { width: 100%; font: inherit; color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+textarea { min-height: 70px; resize: vertical; }
+pre.out { white-space: pre-wrap; background: var(--card); border: 1px dashed var(--cyan); border-radius: 12px; padding: 12px; font-family: inherit; font-size: 15px; margin: 10px 0; }
+.photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
+.photos div { position: relative; }
+.photos img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; border: 1px solid var(--line); }
+.photos button { position: absolute; top: 4px; right: 4px; border: 0; border-radius: 50%; width: 26px; height: 26px; background: rgba(0,0,0,.6); color: #fff; }
+.vid { display: flex; gap: 12px; text-decoration: none; color: inherit; }
+.vid img { width: 128px; height: 72px; object-fit: cover; border-radius: 8px; background: var(--line); flex: none; }
+.vid b { display: block; font-size: 15px; line-height: 1.4; }
+.tag { display: inline-block; font-size: 12px; font-weight: 700; padding: 1px 8px; border-radius: 999px; background: var(--cyan-l); color: var(--cyan); margin-right: 4px; }
+@media (prefers-color-scheme: dark) { .tag { color: #9FD8E8; } }
+.do { background: var(--cyan-l); border-radius: 10px; padding: 8px 10px; margin-top: 8px; font-size: 14px; }
+.log-item { border-left: 4px solid var(--cyan); padding-left: 10px; margin: 10px 0; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { border-bottom: 1px solid var(--line); padding: 6px 4px; text-align: left; vertical-align: top; }
+nav.bottom { position: fixed; bottom: 0; left: 0; right: 0; z-index: 6; background: var(--card); border-top: 1px solid var(--line);
+  display: flex; padding-bottom: env(safe-area-inset-bottom); }
+nav.bottom a { flex: 1; text-align: center; padding: 8px 0 6px; text-decoration: none; color: var(--muted); font-size: 12px; }
+nav.bottom a span { display: block; font-size: 22px; line-height: 1.2; }
+nav.bottom a.on { color: var(--cyan); font-weight: 700; }
+.toast { position: fixed; left: 50%; bottom: 96px; transform: translateX(-50%); background: var(--navy); color: #fff; padding: 10px 16px;
+  border-radius: 999px; font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 9; max-width: 90%; }
+.toast.show { opacity: 1; }
+#zoom { position: fixed; inset: 0; background: rgba(0,0,0,.9); z-index: 20; display: none; overflow: auto; }
+#zoom img { width: 200%; max-width: none; display: block; }
+#zoom button { position: fixed; top: calc(12px + env(safe-area-inset-top)); right: 12px; z-index: 21; border: 0; border-radius: 999px; padding: 8px 14px; font-size: 15px; }
+.progress { height: 10px; background: rgba(255,255,255,.25); border-radius: 999px; overflow: hidden; margin: 8px 0 4px; }
+.progress div { height: 100%; background: var(--amber-b); }
+</style>
+</head>
+<body>
+<header class="top"><h1 id="title">NLP 實作小幫手</h1><button id="aboutBtn" aria-label="說明">說明</button></header>
+<main id="view"></main>
+<nav class="bottom" aria-label="主選單">
+  <a href="#home" data-tab="home"><span>⌂</span>首頁</a>
+  <a href="#units" data-tab="units"><span>☰</span>關卡</a>
+  <a href="#prompt" data-tab="prompt"><span>✎</span>提示卡</a>
+  <a href="#videos" data-tab="videos"><span>▶</span>影片</a>
+  <a href="#log" data-tab="log"><span>✓</span>日誌</a>
+</nav>
+<div class="toast" id="toast"></div>
+<div id="zoom" role="dialog" aria-label="放大圖片"><button id="zoomClose">關閉 ✕</button><img alt=""></div>
+
+<script>
+const COLAB = "https://colab.research.google.com/github/pjkuo/nlp-detective-app/blob/main/notebook/nlp_colab_template.ipynb";
+const GEMINI = "https://gemini.google.com/";
+
+const VIDEOS = [
+ {k:"V1", id:"yXTW5BtXPvQ", t:"先思考後驗證 120 秒影音", d:"1:59", u:"導論", own:1, op:"看完用一句話寫下「先思考」和「後驗證」各要做什麼"},
+ {k:"V2", id:"jtSpZbgRm5g", t:"由作而管：人機協作三層級", d:"2:25", u:"導論", own:1, op:"想想：哪些步驟是你「做」，哪些是你「管」？記一筆日誌"},
+ {k:"V3", id:"l5luM0T6CfM", t:"paul@CT&GEN AI COLAB", d:"0:58", u:"開始前", own:1, op:"看完開啟 Colab 筆記本，按「第 0 步」的 ▶"},
+ {k:"V4", id:"RgvnGZE6dMY", t:"心智圖 IPO 教學影片", d:"2:01", u:"動手前", own:1, op:"跟著畫「課程回饋分析」心智圖，用提示卡頁拍照存下來"},
+ {k:"V5", id:"_Pda5WXIGpI", t:"由 IPO 架構到 Python 運作", d:"0:56", u:"動手前", own:1, op:"看完到提示卡頁填 IPO，產生 CRISP 提示"},
+ {k:"V6", id:"O5Vdxg89dNE", t:"Smart Aquaculture Tutorial", d:"3:01", u:"第 3 關", own:1, op:"把溶氧、水溫當 I，警示當 O，對照第 3 關的魚塭警示"},
+ {k:"V7", id:"glkNRqyLSio", t:"用 ROUGE 評估生成式 AI 的偏差與雜訊", d:"0:56", u:"第 7 關", own:1, op:"想想除了「重點句在原文」，還能怎麼檢查摘要"},
+ {k:"V8", id:"inN8seMm7UI", t:"Get started with Google Colaboratory（英文）", d:"3:10", u:"開始前", own:0, op:"跟著新增一格程式碼、一格文字"},
+ {k:"V9", id:"eJCXFIoOwdw", t:"Python 第一課：Google Colaboratory 介紹", d:"23:40", u:"開始前", own:0, op:"04:23 開啟 Colab｜05:44 執行程式｜06:51 介面｜17:33 快捷鍵"},
+ {k:"V10", id:"XWJzlzMaG1k", t:"How to Use Google Gemini in Google Colab（英文）", d:"4:17", u:"第 1 關", own:0, op:"打開 Gemini 面板，貼上第 1 關提示卡，請它先說做法"},
+ {k:"V11", id:"mUYWpvAncjk", t:"在 Google Colab 上設定 Gemini 與操作 Python", d:"16:53", u:"第 5、7 關", own:0, op:"比較影片寫法和筆記本的 ask_gemini()：筆記本不用金鑰"},
+ {k:"V12", id:"zrKyTYQqH-s", t:"5 分鐘在 Colab 快速使用 Gemini 產生文本", d:"8:19", u:"第 7 關", own:0, op:"影片用舊套件；練習時改用筆記本「進階」那格的寫法"},
+];
+
+const UNITS = [
+ {n:1, t:"數數看：這段話有幾個字？", goal:"讓程式數字數、標點和句子，再跟你自己數的比一比。", img:"two_ways",
+  steps:["先自己數一段話有幾句、幾個標點", "複製下面的提示卡，貼到 Colab 的 Gemini 面板", "請它先說做法，你說「可以」才寫程式", "讀懂程式再按 ▶", "跟自己數的比一比，不一樣就用中文告訴 Gemini"],
+  crisp:{C:"我是大一學生，第一次用 Colab。", R:"請當程式小幫手，用白話說明。", I:"幫我數一段中文的總字數（不算空白）、中文字、標點（全形半形都算）、句子（看。！？）。", S:"段落放在變數 text，結果印一行就好。", P:"先用三行說你打算怎麼做，我說「可以」再寫程式。"},
+  quiz:{q:"程式說 3 句，你數出 4 句，下一步怎麼做？", o:["直接相信程式", "用中文描述差異請 Gemini 修正，並確認句子怎麼算", "自己偷偷改程式，不用說"], a:1, w:"先弄清楚「句子」的定義，再請 Gemini 改。你是驗證的人。"},
+  think:["半形的「?」有算到嗎？", "每一行程式你都能說出用途嗎？"], v:["V10"]},
+ {n:2, t:"大家最常講什麼？", goal:"把每句話切成詞（像把一串粽子剪開），再數哪些詞出現最多次。", img:"pipeline",
+  steps:["在 Colab 執行「建立範例資料」", "把提示卡貼給 Gemini，只要它列計畫", "計畫至少改一處，再說「可以」", "執行斷詞與數次數", "把沒意義的詞（例如「希望」）寫下來，下一關丟掉"],
+  crisp:{C:"feedback.csv 是課程回饋，欄位 id、建議。", R:"請當程式小幫手，用白話說明。", I:"把「建議」欄斷詞（jieba 繁體大詞典），去掉單字、標點、數字，再數次數。", S:"存成 freq.csv（詞, 次數），並列出前 20 名。", P:"先只列計畫和要裝的套件，不要寫程式。"},
+  quiz:{q:"Gemini 列出計畫後，你應該？", o:["馬上說「可以」", "看過並至少改一處，再核准", "跳過計畫，直接要程式"], a:1, w:"計畫是你最便宜的改錯機會。"},
+  think:["計畫有沒有讀錯欄位？", "「老師上課」被切成一個詞，合理嗎？"], v:["V4", "V5"]},
+ {n:3, t:"先寫標準答案，再讓程式對答案", goal:"標準答案由你寫，程式只負責對答案。AI 不能改你的答案。", img:"loop",
+  steps:["寫 5 句本系的句子，自己寫出正確斷詞", "把新詞加進自訂詞典（例如：石斑魚）", "執行測試，看通過還是失敗", "魚塭警示：先自己填 8 組正確答案", "執行 alert() 測試，11 筆全過才算數"],
+  crisp:{C:"這句被切錯了：「屏東科技大學的水產養殖系研究石斑魚虹彩病毒」", R:"請當程式小幫手。", I:"建立自訂詞典和停用詞，寫一個 seg() 函式。", S:"正確答案：屏東科技大學／水產養殖系／研究／石斑魚／虹彩病毒。", P:"用我給的答案寫測試，印出通過或失敗；不可以改我的答案。"},
+  quiz:{q:"測試全部「通過」，代表什麼？", o:["程式一定是對的", "還要確認答案是人寫的、沒被 AI 改過", "AI 說通過就好"], a:1, w:"AI 自己出題自己改，「全部一致」也沒意義。"},
+  think:["溶氧剛好 3.0 該不該警示？誰說了算？", "改壞了可以用「檔案 → 修訂版本記錄」回去嗎？"], v:["V6"]},
+ {n:4, t:"畫成圖，一眼看懂", goal:"把最常出現的詞畫成長條圖和文字雲。", img:"top15",
+  steps:["執行畫圖那格", "如果中文變方框，只跟 Gemini 說「圖上的中文都變成方框」", "看它找到的原因（缺中文字型）", "抽一個詞，自己數數看跟圖一樣嗎", "把圖給同學看，請他說出三個發現"],
+  crisp:{C:"我已經斷好詞了。", R:"請當程式小幫手。", I:"畫前 15 名的橫條圖，再畫一張文字雲。", S:"標題「課程回饋高頻詞」，中文字型用 Noto Sans CJK。", P:"告訴我怎麼確認圖上的數字是對的。"},
+  quiz:{q:"圖上的中文變成方框，最好怎麼問 Gemini？", o:["把整段程式貼給它", "描述看到的現象：「中文都變成方框」", "改成英文就好"], a:1, w:"先描述現象，讓 AI 找原因，你也學會怎麼說清楚問題。"},
+  think:["文字雲的字大小能拿來比較誰多嗎？", "長條圖為什麼比較準？"], v:[]},
+ {n:5, t:"是稱讚還是抱怨？", goal:"用兩種方法判斷評論是正面、負面還是中性，再跟人工標註比比看。", img:"sentiment",
+  steps:["兩人一組，先自己標每則評論是正面、負面或中性", "方法 A：詞典法（看到好詞加分、壞詞扣分）", "方法 B：問 Gemini，但先把答案欄拿掉", "比較兩種方法的準確率", "挑判錯的句子，寫出為什麼錯"],
+  crisp:{C:"reviews.csv 是課程評論，有人工標註。", R:"請當程式小幫手。", I:"寫詞典法函式，正面詞加分、負面詞扣分，要處理「不、沒、未、別」。", S:"回傳「正面／負面／中性」其中一個。", P:"先說你會怎麼處理「不太好」和「沒有想像中難懂」，我同意再寫。"},
+  quiz:{q:"為什麼要先把人工標註拿掉，再給 Gemini 判斷？", o:["檔案比較小", "不讓 AI 偷看答案，比較才公平", "Gemini 看不懂標註"], a:1, w:"考試不能先看答案，AI 也一樣。"},
+  think:["「沒有想像中難懂，蠻有趣的」為什麼被判成中性？", "哪一種判錯最嚴重？"], v:["V11"]},
+ {n:6, t:"做成「一鍵分析」", goal:"把前面的步驟包成一個函式，換一份資料只要一行。", img:"crisp",
+  steps:["在 Gemini 面板打開 Custom Instructions，貼上課程規則", "請 Gemini 把第 2–4 關整理成 analyze()", "先看它的計畫再核准", "換一份資料（例如 news.csv）試試", "清除輸出後，存一份副本當範本"],
+  crisp:{C:"我做好了斷詞、數次數、畫圖三個步驟。", R:"請當程式小幫手。", I:"把它們整理成 analyze(檔名, 欄位) 函式。", S:"不要把檔名或欄位寫死。", P:"告訴我換一份資料要怎麼測。"},
+  quiz:{q:"把流程包成函式，最大的好處是？", o:["程式變比較長", "換資料只要改一行", "以後就不用驗證"], a:1, w:"好的工具讓你省力，但換了資料一樣要檢查。"},
+  think:["函式有沒有寫死檔名？", "新資料套用舊的停用詞合適嗎？"], v:[]},
+ {n:7, t:"請 Gemini 一次讀很多篇新聞", goal:"讓 Gemini 寫摘要、分類、挑重點句，再用程式抓它有沒有「一本正經地瞎掰」。", img:"batch",
+  steps:["先只跑 5 篇", "要求 Gemini 只回傳 JSON", "要求重點句「一字不改從原文抄」", "程式檢查重點句是不是真的在原文裡", "算出瞎掰率，寫進日誌"],
+  crisp:{C:"news.csv 是農業短文。", R:"請當資料整理小幫手。", I:"每篇給我 50 字摘要、主題分類、原文中最重要的一句。", S:"只輸出 JSON；主題只能選病蟲害、水產、氣候、市場、其他。", P:"重點句必須一字不改出自原文。"},
+  quiz:{q:"怎麼抓出 Gemini 有沒有瞎掰？", o:["相信它說的", "要求重點句一字不改出自原文，再用程式比對", "多問幾次看答案一不一樣"], a:1, w:"把「真不真」變成程式能檢查的條件。"},
+  think:["挑一篇自己讀，摘要寫得對嗎？", "主題分類你同意嗎？"], v:["V7", "V11", "V12"]},
+ {n:8, t:"開書考：先找資料，再回答", goal:"程式先翻資料找到相關段落，再請 Gemini 只照這些段落回答並標出處。", img:"rag",
+  steps:["把課程公告存成文字檔", "寫 10 個問題，其中 3 個是資料裡沒有的", "執行問答，看每題有沒有出處", "問資料裡沒有的，它有沒有說「資料中沒有」", "選一個期末專題題目"],
+  crisp:{C:"docs 資料夾裡是課程常見問題。", R:"回答對象是大一新生，三句以內。", I:"先找最相關的 3 段，再只根據這些段落回答。", S:"句尾標出處編號，例如 [1]。", P:"資料不夠就回答「資料中沒有」。"},
+  quiz:{q:"問到資料裡沒有的事，好的問答工具應該？", o:["盡量猜一個答案", "老實說「資料中沒有」", "上網找一個答案"], a:1, w:"不知道就說不知道，才值得信任。"},
+  think:["每個答案的出處真的支持答案嗎？", "期末想做哪個題目？"], v:[]},
+];
+
+// ---------- storage (fails safely) ----------
+const store = {
+  get(k, d) { try { const v = localStorage.getItem("nlp." + k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem("nlp." + k, JSON.stringify(v)); return true; } catch (e) { toast("手機空間不足，存不下來"); return false; } },
+};
+const $ = (s, el = document) => el.querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const isNative = () => !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("show"), 2200); }
+function openExt(url) { if (isNative()) location.href = url; else window.open(url, "_blank", "noopener"); }
+async function copyText(text) {
+  try { await navigator.clipboard.writeText(text); toast("已複製，到 Gemini 面板貼上"); return; } catch (e) {}
+  const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select();
+  try { document.execCommand("copy"); toast("已複製"); } catch (e) { toast("請長按文字自行複製"); } ta.remove();
+}
+async function shareText(title, text, files) {
+  try {
+    if (files && files.length && navigator.canShare && navigator.canShare({ files })) { await navigator.share({ title, text, files }); return; }
+    if (navigator.share) { await navigator.share({ title, text }); return; }
+  } catch (e) { if (e.name === "AbortError") return; }
+  copyText(text);
+}
+const crispText = (c) => `C 背景：${c.C}\nR 角色：${c.R}\nI 任務：${c.I}\nS 規格：${c.S}\nP 驗證：${c.P}`;
+const fig = (name, cap) => `<img class="fig" loading="lazy" src="img/${name}.jpg" alt="${esc(cap)}" data-zoom><div class="cap">${esc(cap)}（點圖可放大）</div>`;
+const crispBox = (c) => `<div class="crisp">${["C", "R", "I", "S", "P"].map((k) => `<div class="ln"><span class="k ${k === "P" ? "p" : ""}">${k}</span><span>${esc(c[k])}</span></div>`).join("")}</div>`;
+const vidCard = (v) => `<div class="card"><a class="vid" href="https://youtu.be/${v.id}" data-ext>
+  <img loading="lazy" src="https://i.ytimg.com/vi/${v.id}/mqdefault.jpg" alt="">
+  <div><span class="tag">${v.k}</span><span class="tag">${v.d}</span><b>${esc(v.t)}</b><span class="muted">${esc(v.u)}${v.own ? "｜課程自製" : "｜外部影片"}</span></div></a>
+  <div class="do"><b>看完動手做：</b>${esc(v.op)}</div></div>`;
+
+// ---------- views ----------
+const views = {
+  home() {
+    const done = store.get("done", []);
+    return `<div class="card hero"><h2>用中文指揮 AI 寫程式</h2>
+      <p>你負責想清楚、按執行、對答案；Gemini 負責寫程式。</p>
+      <div class="progress"><div style="width:${done.length / 8 * 100}%"></div></div>
+      <div style="font-size:14px">已完成 ${done.length} / 8 關</div></div>
+      <a class="btn primary" href="${COLAB}" data-ext>▶ 開啟 Colab 實作筆記本</a>
+      <a class="btn ghost" href="#units">從第 1 關開始</a>
+      <h3>每一關都這樣做</h3>${fig("loop", "只有第 4 步交給 AI，其他由你負責")}
+      <div class="grid2">
+        <a class="tile" href="#prompt"><span class="ic">✎</span><b>動手前</b><span class="muted">拍心智圖、寫 IPO、組提示</span></a>
+        <a class="tile" href="#videos"><span class="ic">▶</span><b>看影片</b><span class="muted">12 支，看完就動手</span></a>
+        <a class="tile" href="#start"><span class="ic">⌂</span><b>開始前</b><span class="muted">認識 Colab 介面</span></a>
+        <a class="tile" href="#about"><span class="ic">ⓘ</span><b>資料與安全</b><span class="muted">資料從哪來、隱私</span></a>
+      </div>
+      <div class="card" style="margin-top:12px"><b>安全三件事</b><ol style="margin:6px 0 0; padding-left:20px">
+        <li>不放個資、成績、密碼</li><li>Colab 的 Gemini 功能要年滿 18 歲</li><li>分享筆記本前先清除輸出</li></ol></div>`;
+  },
+  start() {
+    return `<h2>開始前：認識 Colab</h2>
+      <ol class="steps"><li>用 Google 帳號登入</li><li>按首頁的「開啟 Colab 實作筆記本」</li><li>先按 <b>檔案 → 在雲端硬碟中儲存副本</b></li><li>從上往下一格一格按 ▶</li></ol>
+      <h3>畫面上的 8 個位置</h3>${fig("ui", "Colab 介面導覽")}
+      <h3>Gemini 的兩種用法</h3>${fig("two_ways", "對話面板幫你寫程式；程式裡呼叫幫你處理文字")}
+      ${VIDEOS.filter((v) => v.u === "開始前").map(vidCard).join("")}`;
+  },
+  units() {
+    const done = store.get("done", []);
+    return `<h2>8 個關卡</h2>${fig("pipeline", "關卡地圖：前面用規則，後面才請 Gemini 幫忙")}` +
+      UNITS.map((u) => `<a class="card unit-item" href="#unit/${u.n}" style="text-decoration:none;color:inherit;display:flex">
+        <span class="badge ${done.includes(u.n) ? "done" : ""}">${done.includes(u.n) ? "✓" : u.n}</span>
+        <span class="t"><b>第 ${u.n} 關｜${esc(u.t)}</b><span class="muted">${esc(u.goal)}</span></span><span>›</span></a>`).join("");
+  },
+  unit(n) {
+    const u = UNITS.find((x) => x.n === +n); if (!u) return views.units();
+    const done = store.get("done", []).includes(u.n);
+    const vids = u.v.map((k) => VIDEOS.find((v) => v.k === k)).map(vidCard).join("");
+    return `<a href="#units" class="muted" style="text-decoration:none">‹ 回關卡列表</a>
+      <h2>第 ${u.n} 關｜${esc(u.t)}</h2>
+      <div class="card"><b>這關要做什麼</b><p style="margin:4px 0 0">${esc(u.goal)}</p></div>
+      ${fig(u.img, "第 " + u.n + " 關圖解")}
+      <h3>步驟</h3><div class="card"><ol class="steps">${u.steps.map((s) => `<li>${esc(s)}</li>`).join("")}</ol></div>
+      <h3>CRISP 提示卡</h3>${crispBox(u.crisp)}
+      <div class="row" style="margin-top:10px"><button class="btn cyan" data-copy="${u.n}">複製提示卡</button><a class="btn ghost" href="${COLAB}" data-ext>去 Colab 做</a></div>
+      <h3>P 驗證：小測驗</h3><div class="card quiz" data-unit="${u.n}"><b>${esc(u.quiz.q)}</b>
+        ${u.quiz.o.map((o, i) => `<button class="opt" data-i="${i}">${String.fromCharCode(65 + i)}　${esc(o)}</button>`).join("")}<div class="fb" aria-live="polite"></div></div>
+      <h3>想一想</h3><div class="card"><ul style="margin:0; padding-left:20px">${u.think.map((t) => `<li>${esc(t)}</li>`).join("")}</ul></div>
+      ${vids ? "<h3>看影片學操作</h3>" + vids : ""}
+      <button class="btn ${done ? "ghost" : "primary"}" data-done="${u.n}">${done ? "✓ 已完成（再按取消）" : "這關完成了"}</button>
+      <a class="btn ghost" href="#log">寫一筆監督日誌</a>`;
+  },
+  prompt() {
+    const ipo = store.get("ipo", { topic: "課程回饋裡，大家最常提到什麼？", I: "feedback.csv 的「建議」欄", P: "斷詞 → 丟掉沒意義的詞 → 數每個詞出現幾次", O: "最常出現的 20 個詞＋長條圖" });
+    const me = store.get("me", { who: "資管系大一學生", aud: "同組同學" });
+    const photos = store.get("photos", []);
+    return `<h2>動手前：心智圖 → IPO → CRISP</h2>${fig("mm2crisp", "心智圖幫你想，IPO 幫你說清楚，CRISP 讓 Gemini 聽得懂")}
+      <h3>1. 拍下你的心智圖／IPO 表</h3>${fig("upload", "上傳 4 個動作")}
+      <div class="card"><label for="pick" class="btn cyan" style="margin:0">📷 選照片或拍照</label>
+        <input id="pick" type="file" accept="image/*" multiple hidden>
+        <div class="photos">${photos.map((p, i) => `<div><img src="${p}" alt="照片 ${i + 1}"><button data-del="${i}" aria-label="刪除">✕</button></div>`).join("")}</div>
+        <p class="muted" style="margin-top:8px">照片只存在你的手機。Colab 的上傳格要再選一次同一張照片。</p></div>
+      <h3>2. 寫下 IPO</h3><div class="card">
+        <label>題目</label><input type="text" id="f_topic" value="${esc(ipo.topic)}">
+        <label>I 輸入什麼</label><input type="text" id="f_I" value="${esc(ipo.I)}">
+        <label>P 怎麼處理</label><input type="text" id="f_P" value="${esc(ipo.P)}">
+        <label>O 輸出什麼</label><input type="text" id="f_O" value="${esc(ipo.O)}">
+        <label>我是誰</label><input type="text" id="f_who" value="${esc(me.who)}">
+        <label>說給誰聽</label><input type="text" id="f_aud" value="${esc(me.aud)}"></div>
+      <h3>3. 自動組好的 CRISP 提示</h3><pre class="out" id="out"></pre>
+      <div class="row"><button class="btn primary" id="copyOut">複製提示</button><button class="btn ghost" id="shareOut">分享</button></div>
+      <a class="btn cyan" href="${COLAB}" data-ext>開啟 Colab，貼到 Gemini 面板</a>
+      <h3>CRISP 白話版</h3><div class="card"><table><tr><th>字母</th><th>一句話記住</th></tr>
+        <tr><td>C 背景</td><td>先自我介紹</td></tr><tr><td>R 角色</td><td>請 AI 換對的身分</td></tr><tr><td>I 任務</td><td>進什麼、怎麼做、出什麼</td></tr>
+        <tr><td>S 規格</td><td>給它一個範例和限制</td></tr><tr><td>P 驗證</td><td><b>先想好怎麼對答案</b></td></tr></table></div>
+      ${VIDEOS.filter((v) => v.u === "動手前").map(vidCard).join("")}`;
+  },
+  videos() {
+    return `<h2>影片：看完就動手</h2><p class="muted">V1–V7 是課程自製影片，V8–V12 是外部影片；畫面可能和現在的 Colab 不同，操作以筆記本為準。</p>` + VIDEOS.map(vidCard).join("");
+  },
+  log() {
+    const log = store.get("log", []);
+    return `<h2>監督日誌</h2><p class="muted">每關做完記一筆：你叫 AI 做什麼、它做了什麼、你怎麼決定。</p>
+      <div class="card"><label>關卡</label><select id="l_unit">${["開始前", "動手前"].concat(UNITS.map((u) => "第 " + u.n + " 關")).map((x) => `<option>${x}</option>`).join("")}</select>
+        <label>我給 Gemini 的提示</label><textarea id="l_prompt" placeholder="例如：請先列計畫，不要寫程式"></textarea>
+        <label>Gemini 做了什麼</label><textarea id="l_ai" placeholder="例如：列出 5 步計畫，要安裝 jieba"></textarea>
+        <label>我的決定</label><select id="l_dec"><option>採納</option><option>修改</option><option>退回</option></select>
+        <label>理由</label><textarea id="l_why" placeholder="例如：第 3 步沒有排除單字詞"></textarea>
+        <button class="btn primary" id="l_save" style="margin-top:12px">記下來</button></div>
+      <div class="row"><button class="btn cyan" id="l_csv">下載 CSV</button><button class="btn ghost" id="l_share">分享</button></div>
+      <h3>已記 ${log.length} 筆</h3>${log.slice().reverse().map((r) => `<div class="log-item"><b>${esc(r.unit)}｜${esc(r.dec)}</b> <span class="muted">${esc(r.time)}</span>
+        <div>提示：${esc(r.prompt)}</div><div>AI：${esc(r.ai)}</div><div>理由：${esc(r.why)}</div></div>`).join("") || '<p class="muted">還沒有紀錄。</p>'}`;
+  },
+  about() {
+    return `<h2>資料與安全</h2>
+      <h3>資料從哪裡來</h3><div class="card"><table><tr><th>檔案</th><th>來源</th></tr>
+        <tr><td>feedback.csv 課程建議</td><td>老師編寫的教學範例</td></tr>
+        <tr><td>reviews.csv 課程評論</td><td>老師編寫的教學範例</td></tr>
+        <tr><td>news.csv 農業短文</td><td>老師改寫的範例短文，不是真實新聞</td></tr>
+        <tr><td>course_faq.txt 常見問題</td><td>老師編寫的教學範例</td></tr>
+        <tr><td>dict.txt.big 繁體詞典</td><td>jieba 開源專案（GitHub）</td></tr></table>
+        <p class="muted" style="margin-top:8px">想用自己的資料：拿掉姓名學號等個資、不爬別人的評論、CSV 存成 UTF-8。公開資料可以找政府資料開放平臺 data.gov.tw。</p></div>
+      <h3>這個 App 的隱私</h3><div class="card"><p>你的照片、IPO、日誌和進度<b>只存在你的手機</b>，不會上傳。刪除 App 或清除資料就會一起刪掉。</p>
+        <p>點影片或 Colab 會開到 YouTube、Google 的網站，那些網站有自己的隱私規定。</p>
+        <a class="btn ghost" href="privacy.html">完整隱私權政策</a></div>
+      <h3>使用 Gemini 前要知道</h3><div class="card"><ul style="margin:0; padding-left:20px">
+        <li>Colab 的 AI 功能需要 Google 帳號年滿 18 歲</li><li>Google 可能用你的提示改善產品，也可能有人工審閱：不要輸入個資</li><li>免費帳號有用量上限，批次處理先跑 5 筆</li></ul></div>
+      <p class="muted">課程：Colab × Gemini 中文 NLP 實作｜郭博仁｜國立屏東科技大學資訊管理系</p>
+      <a class="btn ghost" href="https://www.youtube.com/@paulkuo4106" data-ext>課程影片頻道</a>
+      <button class="btn ghost" id="reset">清除這支手機上的所有紀錄</button>`;
+  },
+};
+const titles = { home: "NLP 實作小幫手", start: "開始前", units: "關卡", unit: "關卡", prompt: "提示卡", videos: "影片", log: "監督日誌", about: "資料與安全" };
+
+function render() {
+  const [name, arg] = (location.hash.slice(1) || "home").split("/");
+  const fn = views[name] || views.home;
+  $("#view").innerHTML = fn(arg);
+  $("#title").textContent = titles[name] || titles.home;
+  const tab = name === "unit" ? "units" : (name === "start" || name === "about") ? "home" : name;
+  document.querySelectorAll("nav.bottom a").forEach((a) => a.classList.toggle("on", a.dataset.tab === tab));
+  window.scrollTo(0, 0);
+  if (name === "prompt") bindPrompt();
+  if (name === "log") bindLog();
+  if (name === "about") $("#reset").onclick = () => { if (confirm("確定清除進度、照片和日誌？")) { ["done", "log", "ipo", "me", "photos"].forEach((k) => { try { localStorage.removeItem("nlp." + k); } catch (e) {} }); toast("已清除"); render(); } };
+}
+
+function bindPrompt() {
+  const ids = ["topic", "I", "P", "O", "who", "aud"];
+  const upd = () => {
+    const v = Object.fromEntries(ids.map((k) => [k, $("#f_" + k).value.trim()]));
+    store.set("ipo", { topic: v.topic, I: v.I, P: v.P, O: v.O }); store.set("me", { who: v.who, aud: v.aud });
+    $("#out").textContent = crispText({ C: `我是${v.who}，正在做「${v.topic}」。`, R: `請當我的程式小幫手，用白話說明，讓${v.aud}也聽得懂。`,
+      I: `輸入：${v.I}；處理：${v.P}；輸出：${v.O}。`, S: "用 Python，加中文註解；只用我給的資料，不要自己編數字。", P: "先列出計畫，等我說「可以」再寫程式；寫完告訴我要怎麼檢查結果對不對。" });
+  };
+  ids.forEach((k) => $("#f_" + k).addEventListener("input", upd)); upd();
+  $("#copyOut").onclick = () => copyText($("#out").textContent);
+  $("#shareOut").onclick = async () => {
+    const photos = store.get("photos", []);
+    const files = await Promise.all(photos.map(async (p, i) => new File([await (await fetch(p)).blob()], `mindmap_${i + 1}.jpg`, { type: "image/jpeg" })));
+    shareText("我的 IPO 與 CRISP 提示", $("#out").textContent, files);
+  };
+  $("#pick").onchange = async (e) => {
+    const photos = store.get("photos", []);
+    for (const f of [...e.target.files].slice(0, 6 - photos.length)) photos.push(await shrink(f));
+    if (store.set("photos", photos)) toast(`已存 ${photos.length} 張`); render();
+  };
+  document.querySelectorAll("[data-del]").forEach((b) => b.onclick = () => { const p = store.get("photos", []); p.splice(+b.dataset.del, 1); store.set("photos", p); render(); });
+}
+function shrink(file) {
+  return new Promise((res, rej) => {
+    const img = new Image(); const url = URL.createObjectURL(file);
+    img.onload = () => { const s = Math.min(1, 1000 / Math.max(img.width, img.height)); const c = document.createElement("canvas");
+      c.width = Math.round(img.width * s); c.height = Math.round(img.height * s); c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url); res(c.toDataURL("image/jpeg", 0.72)); };
+    img.onerror = rej; img.src = url;
+  });
+}
+function bindLog() {
+  $("#l_save").onclick = () => {
+    const r = { time: new Date().toLocaleString("zh-TW", { hour12: false }), unit: $("#l_unit").value, prompt: $("#l_prompt").value.trim(),
+      ai: $("#l_ai").value.trim(), dec: $("#l_dec").value, why: $("#l_why").value.trim() };
+    if (!r.prompt) { toast("先填「我給 Gemini 的提示」"); return; }
+    const log = store.get("log", []); log.push(r); if (store.set("log", log)) { toast("記好了"); render(); }
+  };
+  const csv = () => { const log = store.get("log", []); const q = (s) => '"' + String(s).replace(/"/g, '""') + '"';
+    return "﻿時間,關卡,我的提示,AI做了什麼,我的決定,理由\n" + log.map((r) => [r.time, r.unit, r.prompt, r.ai, r.dec, r.why].map(q).join(",")).join("\n"); };
+  $("#l_csv").onclick = () => {
+    if (isNative()) { copyText(csv()); toast("App 內無法下載檔案，已複製 CSV 內容"); return; }
+    const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv()], { type: "text/csv" })); a.download = "監督日誌.csv"; a.click();
+  };
+  $("#l_share").onclick = () => shareText("我的監督日誌", store.get("log", []).map((r) => `${r.unit}｜${r.dec}\n提示：${r.prompt}\nAI：${r.ai}\n理由：${r.why}`).join("\n\n") || "還沒有紀錄");
+}
+
+document.addEventListener("click", (e) => {
+  const ext = e.target.closest("[data-ext]"); if (ext) { e.preventDefault(); openExt(ext.href); return; }
+  const z = e.target.closest("[data-zoom]"); if (z) { const box = $("#zoom"); box.querySelector("img").src = z.src; box.style.display = "block"; return; }
+  const cp = e.target.closest("[data-copy]"); if (cp) { copyText(crispText(UNITS.find((u) => u.n === +cp.dataset.copy).crisp)); return; }
+  const dn = e.target.closest("[data-done]"); if (dn) { const n = +dn.dataset.done; let d = store.get("done", []); d = d.includes(n) ? d.filter((x) => x !== n) : d.concat(n); store.set("done", d); toast(d.includes(n) ? "過關！" : "已取消"); render(); return; }
+  const op = e.target.closest(".quiz button.opt"); if (op) { const q = op.closest(".quiz"); const u = UNITS.find((x) => x.n === +q.dataset.unit);
+    const ok = +op.dataset.i === u.quiz.a; q.querySelectorAll("button.opt").forEach((b) => b.classList.remove("right", "wrong"));
+    op.classList.add(ok ? "right" : "wrong"); q.querySelector(".fb").textContent = (ok ? "答對了！" : "再想想。") + u.quiz.w; }
+});
+$("#zoomClose").onclick = () => { $("#zoom").style.display = "none"; };
+$("#aboutBtn").onclick = () => { location.hash = "#about"; };
+window.addEventListener("hashchange", render);
+render();
+if ("serviceWorker" in navigator && !isNative()) navigator.serviceWorker.register("sw.js").catch(() => {});
+</script>
+</body>
+</html>
