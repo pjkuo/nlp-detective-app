@@ -14,6 +14,18 @@
 
 ![Obtainium](qr/obtainium.png)
 
+**全部下載（GitHub Releases，免費、無廣告）**：<https://github.com/pjkuo/nlp-detective-app/releases/latest>
+
+| 檔案 | 內容 | 固定下載網址（永遠是最新版） |
+|---|---|---|
+| nlp-helper.apk | Android App | [下載](https://github.com/pjkuo/nlp-detective-app/releases/latest/download/nlp-helper.apk) |
+| nlp-web-offline.zip | 離線網頁版（Windows／Mac／Chromebook，解壓縮後開 index.html） | [下載](https://github.com/pjkuo/nlp-detective-app/releases/latest/download/nlp-web-offline.zip) |
+| nlp-handout.pdf | 教學講義 | [下載](https://github.com/pjkuo/nlp-detective-app/releases/latest/download/nlp-handout.pdf) |
+| nlp-slides.pdf | 上課簡報 | [下載](https://github.com/pjkuo/nlp-detective-app/releases/latest/download/nlp-slides.pdf) |
+| nlp_colab_template.ipynb | Colab 範本筆記本 | [下載](https://github.com/pjkuo/nlp-detective-app/releases/latest/download/nlp_colab_template.ipynb) |
+| qr-poster-A4.pdf | 教室 QR 海報 | [下載](https://github.com/pjkuo/nlp-detective-app/releases/latest/download/qr-poster-A4.pdf) |
+| SHA256SUMS.txt | 檔案檢查碼 | [下載](https://github.com/pjkuo/nlp-detective-app/releases/latest/download/SHA256SUMS.txt) |
+
 **安裝 APK**：點下載 → 開啟 nlp-helper.apk → 手機問「允許安裝不明來源的應用程式」時選允許 → 安裝。之後有新版，重新下載安裝即可覆蓋（資料會保留）。
 
 App 裡有：8 個關卡（白話說明、步驟圖解、CRISP 提示卡、小測驗）、拍心智圖與寫 IPO 自動組提示、12 支「看完就動手」的影片、監督日誌。照片和日誌只存在自己的手機。
@@ -23,6 +35,7 @@ App 裡有：8 個關卡（白話說明、步驟圖解、CRISP 提示卡、小�
 | 想改什麼 | 改哪裡 | 結果 |
 |---|---|---|
 | App 內容 | `docs/index.html` | 推送後網頁版立即更新；APK 由 GitHub Actions 自動重建並發布到 Releases |
+| 講義、簡報、海報 PDF | `materials/` | 推送後自動發布新版 Release，固定網址不變 |
 | Colab 筆記本 | `notebook/nlp_colab_template.ipynb` | Colab 連結自動用最新版 |
 | 圖示 | `resources/` 後執行 `npx @capacitor/assets generate --android` | 下次建置套用 |
 | 上架 Google Play | 見 [PLAY_STORE.md](PLAY_STORE.md) | 手動產生 AAB 並上傳 |
@@ -38,6 +51,7 @@ docs/          網頁 App（GitHub Pages 與 APK 共用）
 notebook/      Colab 範本筆記本
 android/       Android 專案（Capacitor 8，targetSdk 36）
 resources/     App 圖示與啟動畫面原始檔
+materials/     隨 Release 發布的講義、簡報、海報 PDF
 play/          Google Play 商店素材、教室用 QR 海報
 fastlane/      IzzyOnDroid／F-Droid 商店資料
 ci/            固定的除錯簽章（讓 APK 新版能覆蓋舊版）

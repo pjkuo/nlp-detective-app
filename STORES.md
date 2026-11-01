@@ -2,7 +2,7 @@
 
 | 平台 | 費用 | 誰能上架 | 狀態 |
 |---|---|---|---|
-| GitHub Releases | 免費 | 任何人 | **已上線**：最新版 APK 自動發布 |
+| **GitHub Releases（首選）** | 免費、無廣告、HTTPS | 任何人；學生不用註冊即可下載 | **已上線**：每版附 APK、離線網頁版、講義、簡報、Colab 範本、QR 海報與 SHA256 檢查碼，固定網址 `releases/latest/download/<檔名>` |
 | Obtainium（從 GitHub 自動更新） | 免費、開源 | 不用申請，學生安裝 Obtainium 後一鍵加入 | **已上線**：[obtainium.html](https://pjkuo.github.io/nlp-detective-app/obtainium.html) |
 | IzzyOnDroid（F-Droid 相容商店） | 免費 | 開源 App；APK 須正式簽章（不收除錯版）、30 MB 以內、無追蹤 | 資料已備妥，待下面 3 步 |
 | F-Droid 官方 | 免費 | 開源 App；由 F-Droid 從原始碼自行建置 | 可行，但 npm 建置流程需另寫配方，耗時較久 |

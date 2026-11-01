@@ -9,6 +9,8 @@ on:
       - "android/**"
       - "resources/**"
       - "ci/**"
+      - "materials/**"
+      - "notebook/**"
       - "capacitor.config.json"
       - "package.json"
       - "package-lock.json"
@@ -83,13 +85,44 @@ jobs:
             cp android/app/build/outputs/apk/debug/app-debug.apk nlp-helper.apk
           fi
 
+      # 每一版都附上完整下載檔，學生用固定網址 releases/latest/download/<檔名> 就能拿到最新版
+      - name: 整理下載檔（App、教材、離線網頁版、檢查碼）
+        run: |
+          mkdir -p dist
+          cp nlp-helper.apk dist/
+          cp materials/*.pdf dist/
+          cp notebook/nlp_colab_template.ipynb dist/
+          (cd docs && zip -qr ../dist/nlp-web-offline.zip . -x "sw.js")
+          (cd dist && sha256sum * > SHA256SUMS.txt && cat SHA256SUMS.txt)
+
       - name: 發布到 Releases
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v1.0.${{ github.run_number }}
           name: NLP 實作小幫手 v1.0.${{ github.run_number }}
           body: |
-            學生下載：點下方 nlp-helper.apk，或掃描 README 的 QR code。
-            第一次安裝時，手機會詢問是否允許「安裝不明來源的應用程式」，請選允許。
-          files: nlp-helper.apk
+            ## 學生下載區
+
+            | 檔案 | 內容 | 適用 |
+            |---|---|---|
+            | [nlp-helper.apk](https://github.com/pjkuo/nlp-detective-app/releases/download/v1.0.${{ github.run_number }}/nlp-helper.apk) | Android App | Android 7.0 以上 |
+            | [nlp-web-offline.zip](https://github.com/pjkuo/nlp-detective-app/releases/download/v1.0.${{ github.run_number }}/nlp-web-offline.zip) | 離線網頁版：解壓縮後開啟 index.html | Windows／Mac／Chromebook |
+            | [nlp-handout.pdf](https://github.com/pjkuo/nlp-detective-app/releases/download/v1.0.${{ github.run_number }}/nlp-handout.pdf) | 教學講義 | 全部 |
+            | [nlp-slides.pdf](https://github.com/pjkuo/nlp-detective-app/releases/download/v1.0.${{ github.run_number }}/nlp-slides.pdf) | 上課簡報 | 全部 |
+            | [nlp_colab_template.ipynb](https://github.com/pjkuo/nlp-detective-app/releases/download/v1.0.${{ github.run_number }}/nlp_colab_template.ipynb) | Colab 範本筆記本（也可[直接在 Colab 開啟](https://colab.research.google.com/github/pjkuo/nlp-detective-app/blob/main/notebook/nlp_colab_template.ipynb)） | 全部 |
+            | [qr-poster-A4.pdf](https://github.com/pjkuo/nlp-detective-app/releases/download/v1.0.${{ github.run_number }}/qr-poster-A4.pdf) | 教室 QR 海報 | 教師 |
+            | [SHA256SUMS.txt](https://github.com/pjkuo/nlp-detective-app/releases/download/v1.0.${{ github.run_number }}/SHA256SUMS.txt) | 檔案檢查碼 | 想驗證檔案的人 |
+
+            不想下載？手機直接開[網頁版](https://pjkuo.github.io/nlp-detective-app/)，選「加到主畫面」。
+
+            ### 安裝 Android App
+            1. 用手機點 nlp-helper.apk 下載，下載完按「開啟」。
+            2. 手機詢問是否允許「安裝不明來源的應用程式」時選「允許」，再按「安裝」。
+            3. 之後有新版，重新下載安裝即可覆蓋，日誌與進度會保留。
+
+            ### 安全
+            - 所有檔案都由 GitHub Actions 從本 repo 的公開原始碼自動建置，沒有廣告、沒有追蹤。
+            - 請只從本頁、課程 Moodle 或 QR code 下載。
+            - 照片、IPO、日誌只存在自己的手機，見[隱私權政策](https://pjkuo.github.io/nlp-detective-app/privacy.html)。
+          files: dist/*
           make_latest: true
