@@ -44,3 +44,5 @@ ci/            固定的除錯簽章（讓 APK 新版能覆蓋舊版）
 ```
 
 課程：郭博仁｜國立屏東科技大學資訊管理系｜影片頻道 [youtube.com/@paulkuo4106](https://www.youtube.com/@paulkuo4106)
+
+授權：[MIT](LICENSE)

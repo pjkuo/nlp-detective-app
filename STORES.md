@@ -10,12 +10,13 @@
 | Samsung Galaxy Store | — | 2023 年起只收公司帳號（需 D-U-N-S） | 不適合個人 |
 | Amazon Appstore | — | 2025/8/20 起停止支援一般 Android 手機 | 不適合 |
 
-## 上架 IzzyOnDroid：還差 3 步（需你本人）
+## 上架 IzzyOnDroid：還差 2 步（需你本人）
 
-1. **選開源授權**：在 repo 新增 LICENSE（例如 MIT 或 GPL-3.0）。IzzyOnDroid 只收開源 App。
-2. **改用正式簽章**：依 PLAY_STORE.md 第 2 步建立金鑰，在 GitHub Secrets 新增 4 個密鑰。之後每次建置會自動產生正式簽章 APK。
+已完成：MIT 開源授權（LICENSE）。
+
+1. **改用正式簽章**：依 PLAY_STORE.md 第 2 步建立金鑰，在 GitHub Secrets 新增 4 個密鑰。之後每次建置會自動產生正式簽章 APK。
    - 注意：簽章換掉後，手機上舊的除錯版要先移除一次，才能安裝正式版。
-3. **送出申請**：到 [IzzyOnDroid 申請頁](https://codeberg.org/IzzyOnDroid/repodata/issues) 開一則 issue，附上 repo 網址 `https://github.com/pjkuo/nlp-detective-app`。
+2. **送出申請**：到 [IzzyOnDroid 申請頁](https://codeberg.org/IzzyOnDroid/repodata/issues) 開一則 issue，附上 repo 網址 `https://github.com/pjkuo/nlp-detective-app`。
 
 已備妥：fastlane 商店資料（中英文說明、圖示、主題圖、6 張截圖，在 `fastlane/metadata/android/`）、每次建置自動打 tag（v1.0.N）並在 Releases 附 APK。
 
