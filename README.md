@@ -16,6 +16,8 @@
 
 **全部下載（GitHub Releases，免費、無廣告）**：<https://github.com/pjkuo/nlp-detective-app/releases/latest>
 
+<img src="qr/releases.png" alt="GitHub Releases 下載頁 QR code" width="150">
+
 | 檔案 | 內容 | 固定下載網址（永遠是最新版） |
 |---|---|---|
 | nlp-helper.apk | Android App | [下載](https://github.com/pjkuo/nlp-detective-app/releases/latest/download/nlp-helper.apk) |
