@@ -26,6 +26,7 @@ App 裡有：8 個關卡（白話說明、步驟圖解、CRISP 提示卡、小�
 | Colab 筆記本 | `notebook/nlp_colab_template.ipynb` | Colab 連結自動用最新版 |
 | 圖示 | `resources/` 後執行 `npx @capacitor/assets generate --android` | 下次建置套用 |
 | 上架 Google Play | 見 [PLAY_STORE.md](PLAY_STORE.md) | 手動產生 AAB 並上傳 |
+| 招募 Play 測試同學 | [testers.html](https://pjkuo.github.io/nlp-detective-app/testers.html)、`play/testers-recruit.md` | 學生 3 步加入封閉測試 |
 | 免費上架平台 | 見 [STORES.md](STORES.md) | Obtainium 已可用；IzzyOnDroid 資料已備妥 |
 
 **第一次需要的設定**：Settings → Pages → Source 選「Deploy from a branch」、Branch 選 `main`、資料夾選 `/docs`。
